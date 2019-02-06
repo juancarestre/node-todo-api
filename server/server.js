@@ -17,7 +17,7 @@ app.post('/todos', (req, res) => {
 
     todo.save().then((doc) => {
         res.status(200).send(doc);
-        console.log(JSON.stringify(doc, undefined, 2));
+        console.log(doc);
         
     }, (e) => {
         res.status(400).send(e);
@@ -29,6 +29,7 @@ app.listen(3000, () => {
     console.log('Started on port 3000');
 })
 
+module.exports = {app};
 
 // var user = new User({
 //     email: ' jcrestrepobedoya@gmail.com '
