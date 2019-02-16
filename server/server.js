@@ -26,7 +26,7 @@ app.post('/todos', (req, res) => {
 
     todo.save().then((doc) => {
         res.status(200).send(doc);
-        console.log(doc);
+        //console.log(doc);
         
     }, (e) => {
         res.status(400).send(e);
@@ -36,7 +36,7 @@ app.post('/todos', (req, res) => {
 
 app.get('/todos', (req, res) => {
     Todo.find().then((todos) => {
-        console.log(JSON.stringify({todos}, undefined, 2));
+        //console.log(JSON.stringify({todos}, undefined, 2));
         res.send({todos})
     }), (e) => {
         res.status(400).send(e);
@@ -56,7 +56,7 @@ app.get('/todos/:id', (req, res) => {
         if (!todo) {
             res.status(404).send('Not foundx')
         }
-        console.log(JSON.stringify(todo, undefined, 2));
+        //console.log(JSON.stringify(todo, undefined, 2));
         res.send({todo});
     }).catch((e) => {
         res.status(400).send();
@@ -76,7 +76,7 @@ app.delete('/todos/:id', (req, res) => {
             res.status(404).send('Not foundx')
         }
 
-        console.log(JSON.stringify(todo, undefined, 2));
+        //console.log(JSON.stringify(todo, undefined, 2));
         res.send({todo});
     }).catch((e) => {
         res.status(400).send();
