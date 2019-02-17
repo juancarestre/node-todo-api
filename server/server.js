@@ -14,6 +14,8 @@ const {ObjectID} = require('mongodb');
 
 var app = express();
 
+const bcrypt = require('bcryptjs');
+
 const port = process.env.PORT;
 
 app.use(bodyParser.json());
@@ -126,6 +128,44 @@ app.post('/user', (req, res) => {
 });
 
 
+// POST /user/login {email, password
+
+app.post('/user/login', (req, res) => {
+
+    var body = _.pick(req.body, ['email', 'password']);
+    
+    User.findByCredentials(body.email, body.password).then((user) => {
+        return user.generateAuthToken().then((token) => {
+            res.header('x-auth', token).send(user);
+        })
+    }).catch((e) => {        
+        res.sendStatus(400).send();
+    });
+
+    // var body = _.pick(req.body, ['email', 'password']);
+    // // console.log(body);
+
+    // User.findOne({email: body.email}).then((user) => {
+
+    //     // console.log(user);
+
+    //     if (!user) {
+    //         res.sendStatus(404).send('User not foundx')
+    //     }
+
+    //     console.log(user);
+        
+    //     bcrypt.compare(body.password, user.password).then((result) => {
+    //         if (result) {
+
+    //         }
+    //     }).catch((e) => console.log(e))
+
+    // }).catch((e) => {
+    //     res.status(400).send();
+    // })
+})
+
 
 app.get('/user/me', authenticate, (req, res) => {
     res.send(req.user);
@@ -137,29 +177,3 @@ app.listen(port, () => {
 })
 
 module.exports = {app};
-
-// var user = new User({
-//     email: ' jcrestrepobedoya@gmail.com '
-// });
-
-// user.save().then((result) => {
-//     console.log('Saved todo',result);
-// }).catch((err) => {
-//     console.log('Unable to save todo', err)
-// });
-
-// var newTodo = new Todo({
-//     text: 'Feed the cat',
-//     completed: false,
-//     completedAt: 123
-// });
-
-// var newTodo = new Todo({
-//     text: '         asd          '
-// });
-
-// newTodo.save().then((result) => {
-//     console.log('Saved todo',result);
-// }).catch((err) => {
-//     console.log('Unable to save todo', err)
-// });
