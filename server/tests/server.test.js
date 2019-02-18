@@ -304,6 +304,6 @@ describe('POST /user/login', () => {
                 expect(user.tokens.length).toBe(0);
                 done();
             }).catch((e) => done(e));
-        })
+        });
     });
 })
