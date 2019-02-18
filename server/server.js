@@ -128,8 +128,6 @@ app.post('/user', (req, res) => {
 });
 
 
-// POST /user/login {email, password
-
 app.post('/user/login', (req, res) => {
 
     var body = _.pick(req.body, ['email', 'password']);
@@ -142,28 +140,6 @@ app.post('/user/login', (req, res) => {
         res.sendStatus(400).send();
     });
 
-    // var body = _.pick(req.body, ['email', 'password']);
-    // // console.log(body);
-
-    // User.findOne({email: body.email}).then((user) => {
-
-    //     // console.log(user);
-
-    //     if (!user) {
-    //         res.sendStatus(404).send('User not foundx')
-    //     }
-
-    //     console.log(user);
-        
-    //     bcrypt.compare(body.password, user.password).then((result) => {
-    //         if (result) {
-
-    //         }
-    //     }).catch((e) => console.log(e))
-
-    // }).catch((e) => {
-    //     res.status(400).send();
-    // })
 })
 
 
