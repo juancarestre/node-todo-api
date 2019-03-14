@@ -30,6 +30,9 @@
     "lodash": "^4.17.11",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.9",
-    "supertest": "^3.4.2"
+    "supertest": "^3.4.2",
+    "eslint": "^5.15.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0"
   }
 }

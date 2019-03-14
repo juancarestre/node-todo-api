@@ -1,166 +1,112 @@
-require('./config/config')
+require('./config/config');
 
 const _ = require('lodash');
-const express = require('express')
-const bodyParser = require('body-parser')
+const express = require('express');
+const bodyParser = require('body-parser');
 
-var {mongoose} = require('./db/mongoose')
-var {Todo} = require('./models/todos');
-var {User} = require('./models/user');
+const { mongoose } = require('./db/mongoose');
+const { Todo } = require('./models/todos');
+const { authenticate } = require('./middleware/authenticate');
+const { userRoutes } = require('./routes/userRoutes');
+const { ObjectID } = require('mongodb');
 
-var {authenticate} = require('./middleware/authenticate')
-
-const {ObjectID} = require('mongodb');
-
-var app = express();
-
-const bcrypt = require('bcryptjs');
-
-const port = process.env.PORT;
-
+const app = express();
 app.use(bodyParser.json());
 
 app.post('/todos', authenticate, (req, res) => {
-    var todo = new Todo({
+    const todo = new Todo({
         text: req.body.text,
-        _creator: req.user._id
+        _creator: req.user._id,
     });
-    
+
 
     todo.save().then((doc) => {
         res.status(200).send(doc);
-        //console.log(doc);
-        
+        // console.log(doc);
     }, (e) => {
         res.status(400).send(e);
     });
-
 });
 
 app.get('/todos', authenticate, (req, res) => {
     Todo.find({
-        _creator: req.user._id
+        _creator: req.user._id,
     }).then((todos) => {
-        //console.log(JSON.stringify({todos}, undefined, 2));
-        res.send({todos})
+        res.send({ todos });
     }), (e) => {
         res.status(400).send(e);
-    }
+    };
 });
 
-// GET/todos/123123
-
 app.get('/todos/:id', authenticate, (req, res) => {
-    var id = req.params.id
+    const { id } = req.params;
 
-    if (!ObjectID.isValid(id)){
-        return res.status(404).send()
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
     }
 
     Todo.findOne({
         _id: id,
-        _creator: req.user._id
+        _creator: req.user._id,
     }).then((todo) => {
         if (!todo) {
-            res.status(404).send('Not foundx')
+            res.status(404).send('Not foundx');
         }
-        //console.log(JSON.stringify(todo, undefined, 2));
-        res.send({todo});
+        // console.log(JSON.stringify(todo, undefined, 2));
+        res.send({ todo });
     }).catch((e) => {
         res.status(400).send();
     });
-
-})
+});
 
 app.delete('/todos/:id', authenticate, async (req, res) => {
-    var id = req.params.id
+    const { id } = req.params;
 
-    if (!ObjectID.isValid(id)){
-        return res.status(404).send()
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
     }
 
     try {
         const todo = await Todo.findOneAndRemove({
             _id: id,
-            _creator: req.user._id
-        })
+            _creator: req.user._id,
+        });
         if (!todo) {
-            res.status(404).send('Not foundx')
+            res.status(404).send('Not foundx');
         }
-        res.send({todo});
+        res.send({ todo });
     } catch (error) {
-        res.status(400).send(); 
+        res.status(400).send();
     }
-
 });
 
 app.patch('/todos/:id', authenticate, (req, res) => {
-    var id = req.params.id;
-    var body = _.pick(req.body, ['text','completed']);
+    const { id } = req.params;
+    const body = _.pick(req.body, ['text', 'completed']);
 
-    if(_.isBoolean(body.completed) && body.completed) {
+    if (_.isBoolean(body.completed) && body.completed) {
         body.completedAt = new Date().getTime();
     } else {
         body.completed = false;
-        body.completedAt = null
+        body.completedAt = null;
     }
 
-    Todo.findOneAndUpdate({_id: id, _creator: req.user._id}, {$set: body}, {new: true}).then((todo) => {
+    Todo.findOneAndUpdate({ _id: id, _creator: req.user._id }, { $set: body }, { new: true }).then((todo) => {
         if (!todo) {
-            res.status(404).send('Not foundx')
+            res.status(404).send('Not foundx');
         }
 
-        res.send({todo})
-
+        res.send({ todo });
     }).catch((e) => {
         res.status(400).send();
-    })
-
-})
-
-// Users
-
-app.post('/user', async (req, res) => {
-    var body = _.pick(req.body, ['email', 'password']);
-    var user = new User(body);
-    try {
-        await user.save()
-        const token = await user.generateAuthToken();
-        res.header('x-auth', token).send(user) 
-    } catch (error) {
-        res.status(400).send(error)
-    }
-
+    });
 });
 
+app.use('/user', userRoutes);
 
-app.post('/user/login', async (req, res) => {
-    try {
-        const body = _.pick(req.body, ['email', 'password']);
-        const user = await User.findByCredentials(body.email, body.password)
-        const token = await user.generateAuthToken();
-        res.header('x-auth', token).send(user);        
-    } catch (error) {
-        res.sendStatus(400).send();      
-    }
-});
-
-
-app.get('/user/me', authenticate, (req, res) => {
-    res.send(req.user);
-})
-
-app.delete('/user/me/token', authenticate, async (req, res) => {
-    try {
-        await req.user.removeToken(req.token);
-        res.status(200).send();
-    } catch (error) {
-        res.sendStatus(400).send();
-    }
-});
-
+const port = process.env.PORT;
 app.listen(port, () => {
     console.log(`Started on port ${port}`);
-})
+});
 
-module.exports = {app};
+module.exports = { app };
